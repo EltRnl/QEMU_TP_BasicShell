@@ -4,6 +4,8 @@
  * This is the C entry point, upcalled once the hardware has been setup properly
  * in assembly language, see the reset.s file.
  */
+
+// Adding some global variables to check the bss section along with initialized ones to see where they end up
 void* test0;
 void* test1;
 void* test2 = 14;
@@ -28,11 +30,13 @@ void _start() {
       // not good for the planet! But until we introduce interrupts,
       // there is nothing you can do about it... except comment out
       // this annoying code ;-)
+      /*
       count++;
       if (count > 10000000) {
         uart_send_string(UART0, "\n\rZzzz....\n\r");
         count = 0;
       }
+      */
     }
     if (c == '\r')
       uart_send(UART0, '\n');

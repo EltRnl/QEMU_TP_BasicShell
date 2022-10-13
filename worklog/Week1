@@ -66,13 +66,21 @@ of the linker script and the memory map.
 
 Remove the periodic "Zzzz..." output. Why was it there? 
 What does that tell you about the execution?
+	-> It was here to show use how many operations we were doing while waiting for an input
+	-> This tells use that we have a lot of polling/busy waiting
 
 Why is the symbol _stack_top defined attend why is it at the end of
 everything?
+	-> It is at the end of the memory map because the stack is put at the end of our memory 
+	and grows 'down', meaning the stack pointer sp decrements, unlike the heap that grows up. 
 
 How can you verify in C that the stack is working properly?
+	-> We can verify it by having local variables in our code (or calling functions), each time one is declared 
+	it goes in the stack and the stack pointer sp is updated
 
 What would happen if we were to call to many functions in C?
+	-> The stack would overflow and impact the rest of our memory
+
 How could you verify that your C program executes safely?
 
 Had support for kprintf, see the file "kprintf.c".
