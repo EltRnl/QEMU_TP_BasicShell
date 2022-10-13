@@ -30,6 +30,9 @@ Walk around the code and the makefile.
 
 Make sure you can compile and run for both boards: VAP and VPB.
 Same processor? Same amount of memory?
+	-> They both have different processors and memory (we can see in the Makefile):
+		VAP : processor arm926 and 1M of memory
+		VPB : processor cortex-a8 and 32M of memory
 
 Understand the linker script and the memory map relationship.
 Use the QEMU console and the command:
@@ -40,6 +43,8 @@ Understand what is that bss section and why it needs to be reset to 0.
 Make sure to have a few global variables in C, some initialized to zero
 and some initialized to something else. Confirm you understand the relationship
 between these global variables and the different data sections.
+	-> The bss section is where the un-initialized global variables are stored
+	-> It is zeroed out to prevent previous values from being "affected" to our variables
 
 Experiment with "arm-none-eabi-objdump" to look at what the compiler does,
 both on object files and on the file ELF executable.
@@ -73,7 +78,7 @@ How could you verify that your C program executes safely?
 Had support for kprintf, see the file "kprintf.c".
 
 ---------------------------------------------------
-Git-tag: week1.step2
+Git-tag: week1.step3
 ---------------------------------------------------
 
 Make sure you understand the UART BAR, register offsets, and
@@ -105,7 +110,7 @@ that will be usefull to implement the clearing of the
 terminal window.
 
 ---------------------------------------------------
-Git-tag: week1.step3
+Git-tag: week1.step4
 ---------------------------------------------------
 
 You will code the beginning of a console shell, on the 
