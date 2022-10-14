@@ -1,4 +1,5 @@
 #include "main.h"
+#include "kprintf.c"
 
 /**
  * This is the C entry point, upcalled once the hardware has been setup properly
@@ -20,8 +21,8 @@ void* test9 = 42;
 void _start() {
   int i = 0;
   int count = 0;
-  uart_send_string(UART0, "\nQuit with \"C-a c\" and then type in \"quit\".\n");
-  uart_send_string(UART0, "\nHello world!\n");
+  kprintf("\nQuit with \"C-a c\" and then type in \"quit\".\n");
+  kprintf("\nHello world!\n");
 
   while (1) {
     unsigned char c;
@@ -39,7 +40,7 @@ void _start() {
       */
     }
     if (c == '\r')
-      uart_send(UART0, '\n');
-    uart_send(UART0, c);
+      kputchar('\n');
+    kputchar(c);
   }
 }
