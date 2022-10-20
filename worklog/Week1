@@ -110,8 +110,14 @@ And then watch what happens when hitting special keys:
 	- backspace
 	- delete
 
+	-> the normal characters get printed out like normal, but when trying the arrow keys, invisible characters shows up.
+	If I print their hex values, I see that there is in fact 3 bytes instead of 1 that encodes the arrow keys, and delete is 
+	on 4 bytes.
+
 Notice what happens on the screen with the arrows... not 
 your usual behavior, is it? Explain what is going on.	
+	-> we read the incoming key strokes as indivual bytes or char, and so we don't handle the cases where the keystrokes are 
+	not characters
 
 Notice that the cursor does not leave the window...
 that will be usefull to implement the clearing of the

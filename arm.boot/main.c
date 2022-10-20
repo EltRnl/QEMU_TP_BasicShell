@@ -34,13 +34,13 @@ void _start() {
       /*
       count++;
       if (count > 10000000) {
-        uart_send_string(UART0, "\n\rZzzz....\n\r");
+        kprintf("\n\rZzzz....\n\r");
         count = 0;
       }
       */
     }
     if (c == '\r')
-      kputchar('\n');
-    kputchar(c);
+      uart_send(UART0, '\n');
+    kprintf(" '%x' ",c);
   }
 }

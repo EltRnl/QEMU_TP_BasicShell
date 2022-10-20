@@ -34,7 +34,7 @@ QEMU_LOADER=-device loader,file=kernel.elf
 #   attach via a shell, on a the matching port:
 #     $ telnet locahost 4321
 #-------------------------------------------------------------------
-QEMU_SERIAL=-serial mon:stdio
+QEMU_SERIAL=-serial mon:stdio -serial telnet:localhost:4321,server,nowait
 
 #-------------------------------------------------------------------
 # Prefix for the toolchain, like:
@@ -82,6 +82,9 @@ run: all
 
 debug: all
 	$(QEMU) -M $(QEMU_MACHINE) -cpu $(QEMU_CPU) -m $(QEMU_MEMORY) -nographic $(QEMU_LOADER) $(QEMU_SERIAL) -gdb tcp::1234 -S
+
+telnet: all
+	telnet localhost 4321
 
 kill:
 	pkill qemu-system-arm
