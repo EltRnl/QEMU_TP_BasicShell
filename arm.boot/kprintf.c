@@ -41,7 +41,8 @@
  * It is the internal function that kprintf uses internally
  * to output one single character.
  */
-void kputchar(int c){uart_send(UART1,c);}
+void kputchar(int c){uart_send(UART0,c);}
+void kputchar_err(int c){uart_send(UART1,c);}
 
 /*
  * This is an equivalent to the function "printf" that you known about,
@@ -49,6 +50,7 @@ void kputchar(int c){uart_send(UART1,c);}
  * have in this bare-metal environment.
  */
 void kprintf(const char *fmt, ...);
+void kprinterr(const char *fmt, ...);
 
 /*==================================================================
  * NOTHING TO MODIFY BELOW...
@@ -74,6 +76,14 @@ void kprintf(const char *fmt, ...) {
   va_list ap;
   va_start(ap, fmt);
   kvprintf(fmt, kputchar, 10, ap);
+  va_end(ap);
+}
+
+void kprinterr(const char *fmt, ...) {
+  /* http://www.pagetable.com/?p=298 */
+  va_list ap;
+  va_start(ap, fmt);
+  kvprintf(fmt, kputchar_err, 10, ap);
   va_end(ap);
 }
 
