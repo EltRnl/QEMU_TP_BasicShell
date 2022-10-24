@@ -148,4 +148,10 @@ You will keep a history of the last 20 lines entered,
 using up and down arrows to scroll through the history,
 on the current line, like a regular shell would do.
 
+	-> To implement the shell, I've added seperate files 'shell.h' & 'shell.c' to make it cleaner. To have more control and be able to read the 
+	input lines from the shell, I use a buffer 'line_buffer' to write incoming characters into it, along with an index 'line_index' to know where 
+	I am currently writing. The display is done by clearing the line and reprinting the buffer everytime we modify something, as well as placing the 
+	cursor on the right character for the user's convinience. 
+	-> The current shell handles the two commands listed above "reset" and "echo", behaving similarly to the linux shell.
+
 	
