@@ -1,6 +1,29 @@
 #include "shell.h"
 #include "kprintf.c"
 #include "uart.h"
+#include "vic.h"
+#include "uart-irqs.h"
+
+/***************** UART Events *****************/
+
+void uart_handler_tests(void* cookie){
+	kprintf("Got interrupt with\n\r");
+}
+
+void uart_init(){
+	vic_setup();
+	
+	uint16_t lcr = *(uint16_t*) (UART0 + CUARTLCR_H);
+	lcr |= CUARTLCR_H_FEN;
+	*(uint16_t *) (UART0 + CUARTLCR_H) = lcr;
+
+	vic_irq_enable(UART0_IRQ,uart_handler_tests,(void*)1);
+	
+	unsigned short* imsc = (unsigned short*) (UART0 + UART_IMSC);
+	*imsc = *imsc | UART_IMSC_RXIM;
+	
+	vic_enable();
+}
 
 /***************** Get/Put Char/String *****************/
 
@@ -176,6 +199,7 @@ int parse_line(unsigned char* buffer){
 /***************** Main Function *****************/
 
 void shell(){
+	uart_init();
 	/* Initialize shell screen */
 	clear_screen();
 	kprintf("\nQuit with \"Ctrl-a x\"; or \"Ctrl-a c\" and then type in \"quit\".\n\n");
@@ -190,7 +214,7 @@ void shell(){
 	unsigned char c;							// The character we are reading
 	int flag;									// Flag returned by the function 'parse_line' (no use for now but might be for later)
 
-	while (1) {
+	for (;;) {
 		while (0 == receive_char(&c)){}
 		//kprinterr("Received char '%c' = '%x'\n\r",c,c);		// Sending the received character code to the second display for debugging purposes.
 		switch (c){
@@ -230,5 +254,7 @@ void shell(){
 		kputchar('\r');
 		print_string(line_buffer);
 		for(int i=0; i<len(line_buffer)-line_index; i++) kputchar('\b');
+
+		wfi();
 	}
 }

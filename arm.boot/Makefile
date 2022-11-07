@@ -57,7 +57,7 @@ LDFLAGS= -g -T kernel.ld
 #-------------------------------------------------------------------
 # Object file list
 #-------------------------------------------------------------------
-OBJS=vector.o reset.o uart.o shell.o main.o 
+OBJS=vector.o reset.o irqs.o uart.o vic.o cb.o shell.o main.o
 
 #-------------------------------------------------------------------
 # Compilation rules
@@ -68,6 +68,8 @@ OBJS=vector.o reset.o uart.o shell.o main.o
 %.o: %.s
 	$(TOOLCHAIN)-as $(ASFLAGS) -o $@ $<
 
+%.o: %.S
+	$(TOOLCHAIN)-gcc -x assembler-with-cpp $(CFLAGS) -o $@ $<
 
 #-------------------------------------------------------------------
 all: $(OBJS) 

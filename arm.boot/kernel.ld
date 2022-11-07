@@ -43,4 +43,11 @@ SECTIONS
   . = ALIGN(8);
   . = . + 0x1000; /* 4kB of stack memory */
   stack_top = .;
+
+  /*
+  * Reserving some memory for the interrupt-handling code, the stack top 'irq_stack_top' is used in irqs.S.
+  */
+  . = ALIGN(8);
+  . = . + 0x800; /* 2kB of stack memory, maybe too much but will try. */
+  irq_stack_top = .;
 }
