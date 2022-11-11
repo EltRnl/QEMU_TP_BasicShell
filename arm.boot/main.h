@@ -16,4 +16,10 @@
  */
 #include "board.h"
 
+struct buffers {
+	struct cb * rx;
+	struct cb * tx;
+	
+};
+
 #endif /* MAIN_H_ */

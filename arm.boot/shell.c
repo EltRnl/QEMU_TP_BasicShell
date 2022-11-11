@@ -3,27 +3,11 @@
 #include "uart.h"
 #include "vic.h"
 #include "uart-irqs.h"
+#include "cb.h"
 
 /***************** UART Events *****************/
 
-void uart_handler_tests(void* cookie){
-	kprintf("Got interrupt with\n\r");
-}
 
-void uart_init(){
-	vic_setup();
-	
-	uint16_t lcr = *(uint16_t*) (UART0 + CUARTLCR_H);
-	lcr |= CUARTLCR_H_FEN;
-	*(uint16_t *) (UART0 + CUARTLCR_H) = lcr;
-
-	vic_irq_enable(UART0_IRQ,uart_handler_tests,(void*)1);
-	
-	unsigned short* imsc = (unsigned short*) (UART0 + UART_IMSC);
-	*imsc = *imsc | UART_IMSC_RXIM;
-	
-	vic_enable();
-}
 
 /***************** Get/Put Char/String *****************/
 
@@ -33,8 +17,8 @@ void uart_init(){
  * @param c A pointer to where the received value is stored.
  * @return int The flag returned by 'uart_receive' (see uart.h for more precision).
  */
-int receive_char(unsigned char* c){
-	return uart_receive(UART0, c);
+int receive_char(struct cb * rxcb,unsigned char* c){
+	return cb_get(rxcb,c)==0?1:0;
 }
 
 /**
@@ -147,13 +131,13 @@ int len(char* buffer){
  * @param index The pointer to the current line index.
  * @return int A flag to show what happened (1: behavior executed succesfully, 0: unexpected character, -1: unimplemented behavior).
  */
-int escape_key(char* buffer, int* index){
+int escape_key(struct cb* rxcb, char* buffer, int* index){
 	unsigned char c;
-	if (0 == receive_char(&c) || c!='[') return 0;
-	receive_char(&c);
+	if (0 == receive_char(rxcb, &c) || c!='[') return 0;
+	receive_char(rxcb, &c);
 	switch (c){
 		case '3':	// Del key
-			receive_char(&c);
+			receive_char(rxcb, &c);
 			if(c!='~') return 0;
 			buffer[*index] = '\0';
 			shift_left(buffer,*index);
@@ -198,8 +182,7 @@ int parse_line(unsigned char* buffer){
 
 /***************** Main Function *****************/
 
-void shell(){
-	uart_init();
+void shell(struct buffers* interrupt_buffers){
 	/* Initialize shell screen */
 	clear_screen();
 	kprintf("\nQuit with \"Ctrl-a x\"; or \"Ctrl-a c\" and then type in \"quit\".\n\n");
@@ -215,46 +198,47 @@ void shell(){
 	int flag;									// Flag returned by the function 'parse_line' (no use for now but might be for later)
 
 	for (;;) {
-		while (0 == receive_char(&c)){}
-		//kprinterr("Received char '%c' = '%x'\n\r",c,c);		// Sending the received character code to the second display for debugging purposes.
-		switch (c){
-			case '\r':
-				// When we press enter
-				if (-1 == (flag=parse_line(line_buffer))) {
-					kprintf("\n\rDid not recognise command '");
-					print_string(line_buffer);
-					kprintf("', sorry!\r\n");
-				}
-				reset_buffer(line_buffer);
-				line_index=0;
-				break;
-			case (char)0x7f:
-				// Backspace delete
-				line_index--;
-				if(line_index<=0){
+		//while (0 == receive_char(interrupt_buffers -> rx,&c)){}
+		if (1 == receive_char(interrupt_buffers -> rx,&c)){
+			//kprinterr("Received char '%c' = '%x'\n\r",c,c);		// Sending the received character code to the second display for debugging purposes.
+			switch (c){
+				case '\r':
+					// When we press enter
+					if (-1 == (flag=parse_line(line_buffer))) {
+						kprintf("\n\rDid not recognise command '");
+						print_string(line_buffer);
+						kprintf("', sorry!\r\n");
+					}
+					reset_buffer(line_buffer);
 					line_index=0;
-				}else{
-					line_buffer[line_index] = '\0';
-					shift_left(line_buffer,line_index);
-				}
-				break;
-			case (char)0x1b:
-				// Detecting a control character (del & arrow keys)
-				escape_key(line_buffer,&line_index);
-				break;
-			default:
-				// Should be a normal character
-				insert_char(line_buffer,line_index,c);
-				line_index++;
-				break;
+					break;
+				case (char)0x7f:
+					// Backspace delete
+					line_index--;
+					if(line_index<=0){
+						line_index=0;
+					}else{
+						line_buffer[line_index] = '\0';
+						shift_left(line_buffer,line_index);
+					}
+					break;
+				case (char)0x1b:
+					// Detecting a control character (del & arrow keys)
+					escape_key(interrupt_buffers->rx,line_buffer,&line_index);
+					break;
+				default:
+					// Should be a normal character
+					insert_char(line_buffer,line_index,c);
+					line_index++;
+					break;
+			}
+			max_index = max_index>line_index?max_index:line_index;
+			kputchar('\r');
+			for(int i=0; i<max_index; i++) kputchar(' ');
+			kputchar('\r');
+			print_string(line_buffer);
+			for(int i=0; i<len(line_buffer)-line_index; i++) kputchar('\b');
 		}
-		max_index = max_index>line_index?max_index:line_index;
-		kputchar('\r');
-		for(int i=0; i<max_index; i++) kputchar(' ');
-		kputchar('\r');
-		print_string(line_buffer);
-		for(int i=0; i<len(line_buffer)-line_index; i++) kputchar('\b');
-
 		wfi();
 	}
 }

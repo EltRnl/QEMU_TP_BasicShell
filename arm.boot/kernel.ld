@@ -9,7 +9,7 @@ SECTIONS
 {
   . = 0x00; 
   .vector : { KEEP(vector.o(.text)) }
-  . = 0x1000;
+  . = 0x1800;
   .reset : { KEEP(reset.o(.text)) }
   .text : { *(.text) }
 
