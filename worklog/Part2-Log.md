@@ -49,3 +49,9 @@ By doing this, the buffer is now in the stack with a fixed size.
 ### What I need to do
 
 I have to change the shell a tiny bit to take care of that **BUFFER_SIZE**, and changing a few things regarding **max_index** as it is causing me errors with the back space.
+
+## Commit 4 - Some adjustement in the shell
+
+Having changed the buffer manipulation earlier, I had to change a few things regarding how I handle **max_index**, changing its value when looking at what character I type.
+
+I also made it so that we cannot type additional character once we are at the character limit.
