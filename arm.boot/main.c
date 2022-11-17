@@ -34,10 +34,9 @@ void uart_init(struct buffers* buff){
 	*(uint16_t *) (UART0 + CUARTLCR_H) = lcr;
 
 	vic_irq_enable(UART0_IRQ,uart_rx_handler,(void*)buff);
-	//( ,uart_rt_handler,(void*)buff);
 	
 	unsigned short* imsc = (unsigned short*) (UART0 + UART_IMSC);
-	*imsc = *imsc | UART_IMSC_RXIM;//| UART_IMSC_RTIM;
+	*imsc = *imsc | UART_IMSC_RXIM | UART_IMSC_RTIM;
 	
 	vic_enable();
 }

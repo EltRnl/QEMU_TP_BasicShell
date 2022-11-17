@@ -131,7 +131,7 @@ int len(char* buffer){
  * @param index The pointer to the current line index.
  * @return int A flag to show what happened (1: behavior executed succesfully, 0: unexpected character, -1: unimplemented behavior).
  */
-int escape_key(struct cb* rxcb, char* buffer, int* index){
+int escape_key(struct cb* rxcb, char* buffer, int* index, int* max_index){
 	unsigned char c;
 	if (0 == receive_char(rxcb, &c) || c!='[') return 0;
 	receive_char(rxcb, &c);
@@ -139,8 +139,10 @@ int escape_key(struct cb* rxcb, char* buffer, int* index){
 		case '3':	// Del key
 			receive_char(rxcb, &c);
 			if(c!='~') return 0;
+			if(*max_index == *index) break;
 			buffer[*index] = '\0';
 			shift_left(buffer,*index);
+			*max_index = *max_index - 1;
 			break;
 		case 'A':	// Up
 			break;
@@ -185,20 +187,20 @@ int parse_line(unsigned char* buffer){
 void shell(struct buffers* interrupt_buffers){
 	/* Initialize shell screen */
 	clear_screen();
-	kprintf("\nQuit with \"Ctrl-a x\"; or \"Ctrl-a c\" and then type in \"quit\".\n\n");
+	kprintf("\nQuit with \"Ctrl-a x\"; or \"Ctrl-a c\" and then type in \"quit\".\nYou are limited to 200 characters per command.\n\n");
 
 	/* Buffer to read the input command */
-	const u_int BUFFER_SIZE = 128;
+	const u_int BUFFER_SIZE = 200;				// Maximum number of characters a user can type
 	int line_index = 0;							// Current position where we write
 	int max_index = 0;							// Maximum length our line can have (does not have to be the real max, just above it)
-	unsigned char line_buffer[BUFFER_SIZE];					// Buffer containing the command being typed
+	unsigned char line_buffer[BUFFER_SIZE];		// Buffer containing the command being typed
 	reset_buffer(line_buffer,BUFFER_SIZE);
 
 	/* Some variables to help us later */
 	unsigned char c;							// The character we are reading
 	
 	for (;;) {
-		if (1 == receive_char(interrupt_buffers -> rx,&c)){
+		while (1 == receive_char(interrupt_buffers -> rx,&c)){
 			switch (c){
 				case '\r':
 					// When we press enter
@@ -209,33 +211,34 @@ void shell(struct buffers* interrupt_buffers){
 					}
 					reset_buffer(line_buffer,BUFFER_SIZE);
 					line_index=0;
+					max_index=0;
 					break;
 				case (char)0x7f:
 					// Backspace delete
-					line_index--;
-					if(line_index<=0){
-						line_index=0;
-					}else{
+					if(line_index>0){
+						line_index--;
+						max_index--;
 						line_buffer[line_index] = '\0';
 						shift_left(line_buffer,line_index);
 					}
 					break;
 				case (char)0x1b:
 					// Detecting a control character (del & arrow keys)
-					escape_key(interrupt_buffers->rx,line_buffer,&line_index);
+					escape_key(interrupt_buffers->rx,line_buffer,&line_index,&max_index);
 					break;
 				default:
 					// Should be a normal character
+					if(max_index>=BUFFER_SIZE) break;
 					insert_char(line_buffer,line_index,c);
 					line_index++;
+					max_index++;
 					break;
 			}
-			max_index = max_index>line_index?max_index:line_index;
 			kputchar('\r');
-			for(int i=0; i<max_index; i++) kputchar(' ');
+			for(int i=0; i<max_index+1; i++) kputchar(' ');
 			kputchar('\r');
 			print_string(line_buffer);
-			for(int i=0; i<len(line_buffer)-line_index; i++) kputchar('\b');
+			for(int i=0; i<max_index-line_index; i++) kputchar('\b');
 		}
 		wfi();
 	}
