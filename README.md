@@ -6,6 +6,10 @@ In this project, the goal was to implement functionalities to an existing qemu b
 - First was a simple shell, capable of handling incoming characters and commands. 
 - Second was the handling of interruptions to prevent polling while waiting for inputs.
 
+## How to run
+
+Go into the **arm.boot** folder and run "make run", then have fun with the terminal. When you want to quit, press **Crtl+x** to quit, or **Crtl-a** then type "quit". If for whatever reason the last two methods don't work, go into another terminal, into the folder **arm.boot** and run "make kill" to kill the qemu process.
+
 ## Implemented functionalities
 
 ### The shell
@@ -19,6 +23,12 @@ The first version (polling one) was finished on commit "Part 1 Done - Version 1.
 ### Interrupts
 
 The Receive interrupts were implemented, meaning we don't poll (or spin) anymore waiting for a character.
+
+## Branches
+
+- master : contains all the kept functionalities
+- week1_tests : branch used to implement the shell, later merged into master
+- Part2 : branch used to implement the interrupts and the renewed shell, merged into master
 
 #
 
