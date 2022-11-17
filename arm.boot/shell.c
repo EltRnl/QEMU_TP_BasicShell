@@ -80,8 +80,8 @@ void shift_right(char* buffer, int pos){
  * 
  * @param buffer The buffer to modify.
  */
-void reset_buffer(unsigned char* buffer){
-	for (int i=0; buffer[i]!='\0'; i++) buffer[i] = '\0';
+void reset_buffer(unsigned char* buffer,u_int size){
+	for (int i=0; i<size; i++) buffer[i] = '\0';
 }
 
 /**
@@ -188,28 +188,26 @@ void shell(struct buffers* interrupt_buffers){
 	kprintf("\nQuit with \"Ctrl-a x\"; or \"Ctrl-a c\" and then type in \"quit\".\n\n");
 
 	/* Buffer to read the input command */
+	const u_int BUFFER_SIZE = 128;
 	int line_index = 0;							// Current position where we write
 	int max_index = 0;							// Maximum length our line can have (does not have to be the real max, just above it)
-	unsigned char* line_buffer;					// Buffer containing the command being typed
-	reset_buffer(line_buffer);
+	unsigned char line_buffer[BUFFER_SIZE];					// Buffer containing the command being typed
+	reset_buffer(line_buffer,BUFFER_SIZE);
 
 	/* Some variables to help us later */
 	unsigned char c;							// The character we are reading
-	int flag;									// Flag returned by the function 'parse_line' (no use for now but might be for later)
-
+	
 	for (;;) {
-		//while (0 == receive_char(interrupt_buffers -> rx,&c)){}
 		if (1 == receive_char(interrupt_buffers -> rx,&c)){
-			//kprinterr("Received char '%c' = '%x'\n\r",c,c);		// Sending the received character code to the second display for debugging purposes.
 			switch (c){
 				case '\r':
 					// When we press enter
-					if (-1 == (flag=parse_line(line_buffer))) {
+					if (-1 == parse_line(line_buffer)) {
 						kprintf("\n\rDid not recognise command '");
 						print_string(line_buffer);
 						kprintf("', sorry!\r\n");
 					}
-					reset_buffer(line_buffer);
+					reset_buffer(line_buffer,BUFFER_SIZE);
 					line_index=0;
 					break;
 				case (char)0x7f:

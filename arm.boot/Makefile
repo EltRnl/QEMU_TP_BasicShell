@@ -2,7 +2,7 @@
 # Machine options:
 #   QEMU_MACHINE=versatileab
 #   QEMU_MACHINE=versatilepb
-QEMU_MACHINE=versatileab
+QEMU_MACHINE=versatilepb
 
 ifeq ($(QEMU_MACHINE),versatileab) 
   QEMU_CPU=arm926

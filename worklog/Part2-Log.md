@@ -6,12 +6,16 @@ This was way harder that I thought and I took too much time not start understand
 
 ### Compiling
 Modified the Makefile to handle the new files, and also added the definition of irq_stack_top to the memory map as I saw it needed it.
+
 Had to have a specific instruction in the makefile for .S files like irqs.S.
 
 ### First steps for the interrupts
 Understoof quickly that I had to have code in _irq_handler in vector.s, I took the code I found on the slides to call the function irs.
+
 I figured out how the functions in vic.h/vic.c works a bit, using a table of handlers for the different interrupts.
+
 After consulting with classmates I understand a bit more the use of the declarations in uart-irqs.h, and am starting to use them to enable the interrupts.
+
 I have a function uart_init to do just that, for now it only enables Receive Interrupts.
 
 ### Current situation
@@ -27,3 +31,21 @@ Typing a character does not trigger the _irq_handler, but the _undefined_instruc
 
 ### A bigger problem ?
 Weirder problem, if I switch from 'versatilepb' (that I've been using so far by accident) to 'versatileab', calling anything outside of the file main.c causes an undefined instruction to occure, so there might be a bigger underlying problem happening right now.
+
+## Commit 3 - Big Problem Gone
+
+### False alarm
+
+I just realized that 'versatileab' isn't suppose to work with interrupts -_- so my previous worry was not a problem, I'll stay with 'versatilepb' from now as I did before.
+
+### Found the problem
+
+The weird problem I had where unexpected instructions where raised was actually due to my buffer in shell. I didn't initialized **line_buffer**, I just declared it **"unsigned char* line_buffer"**, as such, the variable **line_buffer** was in the stack, but it's value was not, and it wasn't initialized, as such, when I reseted the buffer it caused problems. 
+
+To resolve this I initialized it like so : **unsigned char line_buffer[BUFFER_SIZE]**
+
+By doing this, the buffer is now in the stack with a fixed size.
+
+### What I need to do
+
+I have to change the shell a tiny bit to take care of that **BUFFER_SIZE**, and changing a few things regarding **max_index** as it is causing me errors with the back space.
